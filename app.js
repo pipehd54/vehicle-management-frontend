@@ -6,6 +6,7 @@ let isLoginMode = true;
 let skip = 0;
 const limit = 5;
 let currentVehiculoId = null;
+let sugerenciaActual = null;
 
 // --- INICIALIZACIÓN AL CARGAR LA PÁGINA ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -90,7 +91,6 @@ async function handleAuthSubmit(event) {
 
     try {
         if (isLoginMode) {
-            // Login con OAuth2 Form-Data
             const formData = new URLSearchParams();
             formData.append('username', email);
             formData.append('password', password);
@@ -107,7 +107,6 @@ async function handleAuthSubmit(event) {
             currentToken = data.access_token;
             localStorage.setItem('jwt_token', currentToken);
 
-            // Decodificar payload JWT para extraer email (sub) y rol oficial almacenado en la DB
             const tokenPayload = JSON.parse(atob(currentToken.split('.')[1]));
             currentUser = { 
                 email: tokenPayload.sub, 
@@ -120,7 +119,6 @@ async function handleAuthSubmit(event) {
             mostrarNotificacion('¡Bienvenido al taller!');
 
         } else {
-            // Registro de usuario
             const res = await fetch(`${CONFIG.API_BASE_URL}/usuarios/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -130,8 +128,6 @@ async function handleAuthSubmit(event) {
             const data = await res.json();
             if (!res.ok) throw new Error(data.detail || 'Error al registrar usuario');
 
-            // Guardar rol registrado localmente para recordarlo en el login
-            localStorage.setItem(`user_role_${email}`, data.rol);
             mostrarNotificacion('Usuario registrado con éxito. Ahora inicia sesión.', 'success');
             toggleAuthMode();
         }
@@ -152,17 +148,21 @@ async function cargarVehiculos() {
         tbody.innerHTML = '';
 
         if (vehiculos.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">No hay vehículos registrados en esta página.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">No hay vehículos registrados en esta página.</td></tr>`;
         } else {
             const esAdmin = currentUser && currentUser.rol === 'administrador';
 
             vehiculos.forEach(v => {
                 const tr = document.createElement('tr');
+                const tipoIcon = v.tipo === 'motocicleta' ? '🏍️ Moto' : '🚗 Carro';
+                const kmText = v.kilometraje_actual ? `${v.kilometraje_actual.toLocaleString('es-CO')} km` : '0 km';
+
                 tr.innerHTML = `
                     <td><strong>#${v.id}</strong></td>
+                    <td><span class="status-badge status-en_proceso">${tipoIcon}</span></td>
                     <td><span style="font-family: monospace; font-weight: bold; color: var(--accent);">${v.placa}</span></td>
-                    <td>${v.marca}</td>
-                    <td>${v.modelo}</td>
+                    <td>${v.marca} ${v.modelo}</td>
+                    <td>${kmText}</td>
                     <td>
                         <button class="btn btn-secondary" onclick="verMantenimientos(${v.id}, '${v.placa}')">🛠️ Mantenimientos</button>
                         <button class="btn btn-danger" ${!esAdmin ? 'disabled title="Se requiere rol de Administrador"' : ''} onclick="eliminarVehiculo(${v.id})">🗑️ Eliminar</button>
@@ -172,7 +172,6 @@ async function cargarVehiculos() {
             });
         }
 
-        // Paginación
         document.getElementById('prev-page-btn').disabled = skip === 0;
         document.getElementById('next-page-btn').disabled = vehiculos.length < limit;
         document.getElementById('page-indicator').textContent = `Página ${Math.floor(skip / limit) + 1}`;
@@ -190,9 +189,14 @@ function cambiarPagina(direccion) {
 
 async function handleCreateVehicle(event) {
     event.preventDefault();
+    const tipo = document.getElementById('v-tipo').value;
     const placa = document.getElementById('v-placa').value.trim().toUpperCase();
     const marca = document.getElementById('v-marca').value.trim();
     const modelo = document.getElementById('v-modelo').value.trim();
+    const kmVal = document.getElementById('v-km').value;
+    const kilometraje_actual = kmVal !== '' ? parseInt(kmVal) : 0;
+    const fechaCompraVal = document.getElementById('v-fecha-compra').value;
+    const fecha_compra = fechaCompraVal ? new Date(fechaCompraVal).toISOString() : null;
 
     try {
         const res = await fetch(`${CONFIG.API_BASE_URL}/vehiculos/`, {
@@ -201,7 +205,7 @@ async function handleCreateVehicle(event) {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${currentToken}`
             },
-            body: JSON.stringify({ placa, marca, modelo })
+            body: JSON.stringify({ placa, marca, modelo, tipo, kilometraje_actual, fecha_compra })
         });
 
         const data = await res.json();
@@ -236,22 +240,53 @@ async function eliminarVehiculo(vehiculoId) {
     }
 }
 
-// --- GESTIÓN DE MANTENIMIENTOS ---
+// --- GESTIÓN DE MANTENIMIENTOS Y RECOMENDACIÓN INTELIGENTE ---
 async function verMantenimientos(vehiculoId, placa) {
     currentVehiculoId = vehiculoId;
     document.getElementById('m-vehiculo-id').value = vehiculoId;
     document.getElementById('maintenance-title').textContent = `🛠️ Mantenimientos del Vehículo: ${placa} (#${vehiculoId})`;
     document.getElementById('maintenance-section').classList.remove('hidden');
 
-    // Scroll suave a la sección
     document.getElementById('maintenance-section').scrollIntoView({ behavior: 'smooth' });
 
+    cargarRecomendacionProximoMantenimiento(vehiculoId);
     cargarMantenimientosVehiculo(vehiculoId);
+}
+
+async function cargarRecomendacionProximoMantenimiento(vehiculoId) {
+    const banner = document.getElementById('recommendation-banner');
+    try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/vehiculos/${vehiculoId}/proximo-mantenimiento`);
+        if (!res.ok) {
+            banner.classList.add('hidden');
+            return;
+        }
+
+        sugerenciaActual = await res.json();
+        document.getElementById('rec-description').textContent = sugerenciaActual.descripcion_sugerida;
+        banner.classList.remove('hidden');
+    } catch (err) {
+        banner.classList.add('hidden');
+    }
+}
+
+function usarMantenimientoSugerido() {
+    if (!sugerenciaActual) return;
+    document.getElementById('m-descripcion').value = sugerenciaActual.descripcion_sugerida;
+    document.getElementById('m-km').value = sugerenciaActual.kilometraje_objetivo;
+    
+    if (sugerenciaActual.fecha_sugerida) {
+        const fechaStr = new Date(sugerenciaActual.fecha_sugerida).toISOString().split('T')[0];
+        document.getElementById('m-fecha-programada').value = fechaStr;
+    }
+    
+    mostrarNotificacion('Mantenimiento sugerido cargado en el formulario');
 }
 
 function cerrarMantenimientos() {
     document.getElementById('maintenance-section').classList.add('hidden');
     currentVehiculoId = null;
+    sugerenciaActual = null;
 }
 
 async function cargarMantenimientosVehiculo(vehiculoId) {
@@ -265,23 +300,25 @@ async function cargarMantenimientosVehiculo(vehiculoId) {
         tbody.innerHTML = '';
 
         if (mantenimientos.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">No hay mantenimientos registrados para este vehículo.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-secondary);">No hay mantenimientos registrados para este vehículo.</td></tr>`;
         } else {
             const esAdmin = currentUser && currentUser.rol === 'administrador';
 
             mantenimientos.forEach(m => {
                 const tr = document.createElement('tr');
-                const fecha = new Date(m.fecha_creacion).toLocaleDateString('es-CO');
                 const costo = m.costo_estimado ? `$ ${m.costo_estimado.toLocaleString('es-CO')}` : 'N/A';
+                const km = m.kilometraje ? `${m.kilometraje.toLocaleString('es-CO')} km` : 'N/A';
+                const fechaProg = m.fecha_programada ? new Date(m.fecha_programada).toLocaleDateString('es-CO') : 'Manual';
 
                 tr.innerHTML = `
                     <td><strong>#${m.id}</strong></td>
                     <td>${m.descripcion}</td>
                     <td><span class="status-badge status-${m.estado}">${m.estado.replace('_', ' ')}</span></td>
                     <td>${costo}</td>
-                    <td>${fecha}</td>
+                    <td>${km}</td>
+                    <td>${fechaProg}</td>
                     <td>
-                        <button class="btn btn-secondary" onclick="cambiarEstadoMantenimiento(${m.id}, '${m.descripcion}', '${m.estado}', ${m.costo_estimado || 0})">✏️ Cambiar Estado</button>
+                        <button class="btn btn-secondary" onclick="cambiarEstadoMantenimiento(${m.id}, '${m.descripcion}', '${m.estado}', ${m.costo_estimado || 0}, ${m.kilometraje || 0})">✏️ Cambiar Estado</button>
                         <button class="btn btn-danger" ${!esAdmin ? 'disabled title="Se requiere rol de Administrador"' : ''} onclick="eliminarMantenimiento(${m.id})">🗑️ Eliminar</button>
                     </td>
                 `;
@@ -300,6 +337,10 @@ async function handleCreateMaintenance(event) {
     const estado = document.getElementById('m-estado').value;
     const costoVal = document.getElementById('m-costo').value;
     const costo_estimado = costoVal !== '' ? parseInt(costoVal) : null;
+    const kmVal = document.getElementById('m-km').value;
+    const kilometraje = kmVal !== '' ? parseInt(kmVal) : null;
+    const fechaProgVal = document.getElementById('m-fecha-programada').value;
+    const fecha_programada = fechaProgVal ? new Date(fechaProgVal).toISOString() : null;
 
     try {
         const res = await fetch(`${CONFIG.API_BASE_URL}/mantenimientos/`, {
@@ -308,7 +349,7 @@ async function handleCreateMaintenance(event) {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${currentToken}`
             },
-            body: JSON.stringify({ vehiculo_id, descripcion, estado, costo_estimado })
+            body: JSON.stringify({ vehiculo_id, descripcion, estado, costo_estimado, kilometraje, fecha_programada })
         });
 
         const data = await res.json();
@@ -323,7 +364,7 @@ async function handleCreateMaintenance(event) {
     }
 }
 
-async function cambiarEstadoMantenimiento(mantenimientoId, descripcion, estadoActual, costoEstimado) {
+async function cambiarEstadoMantenimiento(mantenimientoId, descripcion, estadoActual, costoEstimado, kilometraje) {
     const nuevoEstado = prompt(`Ingresa el nuevo estado para el mantenimiento #${mantenimientoId}:\nOpciones: pendiente, en_proceso, completado`, estadoActual);
     if (!nuevoEstado || nuevoEstado === estadoActual) return;
 
@@ -342,7 +383,8 @@ async function cambiarEstadoMantenimiento(mantenimientoId, descripcion, estadoAc
             body: JSON.stringify({
                 descripcion,
                 estado: nuevoEstado,
-                costo_estimado: costoEstimado
+                costo_estimado: costoEstimado,
+                kilometraje: kilometraje || null
             })
         });
 

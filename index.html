@@ -65,21 +65,36 @@
             <!-- PANEL: REGISTRAR VEHÍCULO -->
             <div class="panel">
                 <div class="panel-header">
-                    <h3 class="panel-title">🚗 Registrar Nuevo Vehículo</h3>
+                    <h3 class="panel-title">🚗 / 🏍️ Registrar Nuevo Vehículo</h3>
                 </div>
                 <form id="vehicle-form" onsubmit="handleCreateVehicle(event)">
                     <div class="form-grid">
+                        <div class="form-group">
+                            <label for="v-tipo">Tipo de Vehículo</label>
+                            <select id="v-tipo" class="form-control">
+                                <option value="carro">🚗 Carro</option>
+                                <option value="motocicleta">🏍️ Motocicleta</option>
+                            </select>
+                        </div>
                         <div class="form-group">
                             <label for="v-placa">Placa</label>
                             <input type="text" id="v-placa" class="form-control" placeholder="ABC-123" required minlength="3" maxlength="20">
                         </div>
                         <div class="form-group">
                             <label for="v-marca">Marca</label>
-                            <input type="text" id="v-marca" class="form-control" placeholder="Toyota" required minlength="2" maxlength="50">
+                            <input type="text" id="v-marca" class="form-control" placeholder="Hero, Toyota, etc." required minlength="2" maxlength="50">
                         </div>
                         <div class="form-group">
                             <label for="v-modelo">Modelo</label>
-                            <input type="text" id="v-modelo" class="form-control" placeholder="Corolla" required minlength="1" maxlength="50">
+                            <input type="text" id="v-modelo" class="form-control" placeholder="Eco 100, Corolla, etc." required minlength="1" maxlength="50">
+                        </div>
+                        <div class="form-group">
+                            <label for="v-km">Kilometraje Actual (km)</label>
+                            <input type="number" id="v-km" class="form-control" placeholder="2500" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="v-fecha-compra">Fecha de Compra (Opcional)</label>
+                            <input type="date" id="v-fecha-compra" class="form-control">
                         </div>
                     </div>
                     <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
@@ -100,9 +115,10 @@
                         <thead>
                             <tr>
                                 <th>ID</th>
+                                <th>Tipo</th>
                                 <th>Placa</th>
-                                <th>Marca</th>
-                                <th>Modelo</th>
+                                <th>Marca y Modelo</th>
+                                <th>Km Actual</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
@@ -126,6 +142,21 @@
                     <button class="btn btn-secondary" onclick="cerrarMantenimientos()">✖️ Cerrar</button>
                 </div>
 
+                <!-- BANNER: PRÓXIMO MANTENIMIENTO RECOMENDADO -->
+                <div id="recommendation-banner" class="recommendation-box hidden" style="margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h4 style="color: var(--accent); display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; margin-bottom: 0.25rem;">
+                                💡 Próximo Mantenimiento Recomendado
+                            </h4>
+                            <p id="rec-description" style="color: var(--text-secondary); font-size: 0.95rem;"></p>
+                        </div>
+                        <button class="btn btn-primary" onclick="usarMantenimientoSugerido()">
+                            ➕ Cargar Recomendación en Formulario
+                        </button>
+                    </div>
+                </div>
+
                 <!-- FORMULARIO CREAR MANTENIMIENTO -->
                 <form id="maintenance-form" onsubmit="handleCreateMaintenance(event)" style="margin-bottom: 2rem;">
                     <input type="hidden" id="m-vehiculo-id">
@@ -146,6 +177,14 @@
                             <label for="m-costo">Costo Estimado ($ COP)</label>
                             <input type="number" id="m-costo" class="form-control" placeholder="120000" min="0">
                         </div>
+                        <div class="form-group">
+                            <label for="m-km">Kilometraje Objetivo (km)</label>
+                            <input type="number" id="m-km" class="form-control" placeholder="3000" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="m-fecha-programada">Fecha Programada (Manual u Opcional)</label>
+                            <input type="date" id="m-fecha-programada" class="form-control">
+                        </div>
                     </div>
                     <div style="margin-top: 1rem; display: flex; justify-content: flex-end;">
                         <button type="submit" class="btn btn-primary">Agregar Mantenimiento</button>
@@ -160,8 +199,9 @@
                                 <th>ID</th>
                                 <th>Descripción</th>
                                 <th>Estado</th>
-                                <th>Costo Estimado</th>
-                                <th>Fecha</th>
+                                <th>Costo</th>
+                                <th>Km</th>
+                                <th>Fecha Programada</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>

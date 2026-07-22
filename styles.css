@@ -128,6 +128,14 @@ body {
     gap: 0.5rem;
 }
 
+/* --- CAJA DE RECOMENDACIÓN DE MANTENIMIENTO --- */
+.recommendation-box {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    border-radius: var(--radius-md);
+    padding: 1.25rem 1.5rem;
+}
+
 /* --- FORMULARIOS --- */
 .form-grid {
     display: grid;
