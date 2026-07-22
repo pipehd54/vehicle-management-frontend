@@ -1,8 +1,16 @@
 # Vehicle Management Frontend 🚗🛠️
 
-Aplicación web cliente (Single Page Application - SPA) construida con **HTML5, CSS3 y Vanilla JavaScript** para consumir la API REST del taller mecánico [vehicle-management-backend](https://github.com/pipet/vehicle-management-backend).
+Aplicación web cliente (Single Page Application - SPA) construida con **HTML5, CSS3 y Vanilla JavaScript** para consumir la API REST del taller mecánico [vehicle-management-backend](https://github.com/pipehd54/vehicle-management-backend).
 
 Este repositorio forma parte de un proyecto de portafolio para demostrar la comunicación independiente cliente-servidor con autenticación JWT y control de acceso basado en roles (RBAC).
+
+---
+
+## 🌐 Aplicación en Producción
+
+- **Demo en Vivo (Vercel):** [https://vehicle-management-frontend-ruby.vercel.app/](https://vehicle-management-frontend-ruby.vercel.app/)
+- **API Backend en Producción (Railway):** [https://vehicle-management-backend-production-e9f4.up.railway.app](https://vehicle-management-backend-production-e9f4.up.railway.app/)
+- **Documentación Interactiva Swagger:** [https://vehicle-management-backend-production-e9f4.up.railway.app/docs](https://vehicle-management-backend-production-e9f4.up.railway.app/docs)
 
 ---
 
@@ -28,30 +36,17 @@ Este repositorio forma parte de un proyecto de portafolio para demostrar la comu
 
 ## 🚀 Cómo ejecutar localmente
 
-1. Clona este repositorio en una carpeta independiente:
+1. Clona este repositorio:
    ```bash
-   git clone https://github.com/tu-usuario/vehicle-management-frontend.git
+   git clone https://github.com/pipehd54/vehicle-management-frontend.git
    ```
 
-2. Asegúrate de que el Backend (`vehicle-management-backend`) esté ejecutándose en `http://localhost:8000`.
+2. Asegúrate de que el Backend (`vehicle-management-backend`) esté ejecutándose en `http://localhost:8000` o configura `config.js` apuntando a tu servidor de producción.
 
 3. Abre el archivo `index.html` en tu navegador preferido o utilízalo con una extensión como **Live Server** en VS Code.
 
 ---
 
-## 🌐 Configurar para Producción (Vercel / Netlify / GitHub Pages)
+## 🔗 Enlaces Relacionados
 
-1. En el archivo `config.js`, actualiza la URL base apuntando a tu API desplegada en Railway:
-   ```javascript
-   const CONFIG = {
-       API_BASE_URL: 'https://tu-api-en-railway.up.railway.app'
-   };
-   ```
-
-2. Despliega esta carpeta en **Vercel** o **Netlify** importando el repositorio de GitHub. ¡No requiere proceso de compilación (*build step*)!
-
----
-
-## 🔗 Repositorio Backend
-
-- **Backend REST API:** [vehicle-management-backend](https://github.com/pipet/vehicle-management-backend)
+- **Repositorio Backend:** [https://github.com/pipehd54/vehicle-management-backend](https://github.com/pipehd54/vehicle-management-backend)
