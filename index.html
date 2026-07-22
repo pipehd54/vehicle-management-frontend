@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Taller Mecánico - Frontend</title>
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- NAVEGACIÓN SUPERIOR -->
+    <nav class="navbar">
+        <div class="brand">
+            <span class="brand-icon">🔧</span>
+            <span>Taller Mecánico</span>
+        </div>
+        <div class="user-status" id="user-status-bar">
+            <!-- Renderizado dinámico desde app.js -->
+        </div>
+    </nav>
+
+    <main class="container">
+
+        <!-- PANEL DE AUTENTICACIÓN (LOGIN / REGISTRO) -->
+        <section id="auth-panel" class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title" id="auth-title">🔑 Iniciar Sesión</h2>
+                <button type="button" class="btn btn-secondary" id="toggle-auth-btn" onclick="toggleAuthMode()">
+                    ¿No tienes cuenta? Regístrate
+                </button>
+            </div>
+            
+            <form id="auth-form" onsubmit="handleAuthSubmit(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="auth-email">Correo Electrónico</label>
+                        <input type="email" id="auth-email" class="form-control" placeholder="mecanico@taller.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="auth-password">Contraseña</label>
+                        <input type="password" id="auth-password" class="form-control" placeholder="••••••••" required minlength="8" maxlength="50">
+                    </div>
+                    <div class="form-group hidden" id="role-group">
+                        <label for="auth-role">Rol de Usuario</label>
+                        <select id="auth-role" class="form-control">
+                            <option value="mecanico">Mecánico</option>
+                            <option value="administrador">Administrador</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+                    <button type="submit" class="btn btn-primary" id="auth-submit-btn">Ingresar al Taller</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- DASHBOARD Y GESTIÓN DE VEHÍCULOS (Visible solo si autenticado) -->
+        <section id="app-panel" class="hidden">
+            
+            <!-- PANEL: REGISTRAR VEHÍCULO -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">🚗 Registrar Nuevo Vehículo</h3>
+                </div>
+                <form id="vehicle-form" onsubmit="handleCreateVehicle(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="v-placa">Placa</label>
+                            <input type="text" id="v-placa" class="form-control" placeholder="ABC-123" required minlength="3" maxlength="20">
+                        </div>
+                        <div class="form-group">
+                            <label for="v-marca">Marca</label>
+                            <input type="text" id="v-marca" class="form-control" placeholder="Toyota" required minlength="2" maxlength="50">
+                        </div>
+                        <div class="form-group">
+                            <label for="v-modelo">Modelo</label>
+                            <input type="text" id="v-modelo" class="form-control" placeholder="Corolla" required minlength="1" maxlength="50">
+                        </div>
+                    </div>
+                    <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+                        <button type="submit" class="btn btn-primary">Registrar Vehículo</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- PANEL: LISTA DE VEHÍCULOS -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">📋 Vehículos Registrados</h3>
+                    <button class="btn btn-secondary" onclick="cargarVehiculos()">🔄 Recargar</button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Placa</th>
+                                <th>Marca</th>
+                                <th>Modelo</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vehicles-tbody">
+                            <!-- Filas insertadas dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination">
+                    <button class="btn btn-secondary" id="prev-page-btn" onclick="cambiarPagina(-1)" disabled>Anterior</button>
+                    <span id="page-indicator" style="font-size: 0.9rem; color: var(--text-secondary);">Página 1</span>
+                    <button class="btn btn-secondary" id="next-page-btn" onclick="cambiarPagina(1)">Siguiente</button>
+                </div>
+            </div>
+
+            <!-- PANEL: MANTENIMIENTOS DEL VEHÍCULO SELECCIONADO -->
+            <div class="panel hidden" id="maintenance-section">
+                <div class="panel-header">
+                    <h3 class="panel-title" id="maintenance-title">🛠️ Mantenimientos</h3>
+                    <button class="btn btn-secondary" onclick="cerrarMantenimientos()">✖️ Cerrar</button>
+                </div>
+
+                <!-- FORMULARIO CREAR MANTENIMIENTO -->
+                <form id="maintenance-form" onsubmit="handleCreateMaintenance(event)" style="margin-bottom: 2rem;">
+                    <input type="hidden" id="m-vehiculo-id">
+                    <div class="form-grid">
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label for="m-descripcion">Descripción del trabajo</label>
+                            <input type="text" id="m-descripcion" class="form-control" placeholder="Cambio de aceite, filtro y revisión de frenos" required minlength="5" maxlength="500">
+                        </div>
+                        <div class="form-group">
+                            <label for="m-estado">Estado Inicial</label>
+                            <select id="m-estado" class="form-control">
+                                <option value="pendiente">Pendiente</option>
+                                <option value="en_proceso">En Proceso</option>
+                                <option value="completado">Completado</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="m-costo">Costo Estimado ($ COP)</label>
+                            <input type="number" id="m-costo" class="form-control" placeholder="120000" min="0">
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem; display: flex; justify-content: flex-end;">
+                        <button type="submit" class="btn btn-primary">Agregar Mantenimiento</button>
+                    </div>
+                </form>
+
+                <!-- TABLA DE MANTENIMIENTOS -->
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Descripción</th>
+                                <th>Estado</th>
+                                <th>Costo Estimado</th>
+                                <th>Fecha</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="maintenances-tbody">
+                            <!-- Filas insertadas dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- NOTIFICACIONES TOAST -->
+    <div id="toast-container"></div>
+
+    <!-- SCRIPTS -->
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

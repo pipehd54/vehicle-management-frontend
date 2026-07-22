@@ -1,0 +1,10 @@
+# Archivos del sistema y editores
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+
+# Variables de entorno locales
+.env
+.env.local
