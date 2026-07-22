@@ -1,6 +1,6 @@
 # Vehicle Management Frontend 🚗🛠️
 
-Aplicación web cliente (Single Page Application - SPA) construida con **HTML5, CSS3 y Vanilla JavaScript** para consumir la API REST del taller mecánico [vehicle-management-backend](https://github.com/pipet/vehicle-management-backend).
+Aplicación web cliente (Single Page Application - SPA) construida con **HTML5, CSS3 y Vanilla JavaScript** para consumir la API REST del taller mecánico [vehicle-management-backend][(https://github.com/pipet/vehicle-management-backend](https://github.com/pipehd54/vehicle-management-backend)).
 
 Este repositorio forma parte de un proyecto de portafolio para demostrar la comunicación independiente cliente-servidor con autenticación JWT y control de acceso basado en roles (RBAC).
 
