@@ -107,13 +107,12 @@ async function handleAuthSubmit(event) {
             currentToken = data.access_token;
             localStorage.setItem('jwt_token', currentToken);
 
-            // Decodificar payload JWT para extraer email (sub) y determinar usuario
+            // Decodificar payload JWT para extraer email (sub) y rol oficial almacenado en la DB
             const tokenPayload = JSON.parse(atob(currentToken.split('.')[1]));
-            currentUser = { email: tokenPayload.sub, rol: 'mecanico' }; // Rol provisional
-
-            // Intentar inferir si es admin probando endpoint o guardando el rol
-            const savedRole = localStorage.getItem(`user_role_${tokenPayload.sub}`);
-            if (savedRole) currentUser.rol = savedRole;
+            currentUser = { 
+                email: tokenPayload.sub, 
+                rol: tokenPayload.rol || 'mecanico' 
+            };
 
             localStorage.setItem('user_data', JSON.stringify(currentUser));
             actualizarInterfazAuth();
