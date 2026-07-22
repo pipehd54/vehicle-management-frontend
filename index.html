@@ -103,6 +103,49 @@
                 </form>
             </div>
 
+            <!-- PANEL: EDITAR VEHÍCULO (Oculto por defecto) -->
+            <div class="panel hidden" id="edit-vehicle-panel">
+                <div class="panel-header">
+                    <h3 class="panel-title" id="edit-vehicle-title">✏️ Editar Vehículo</h3>
+                    <button type="button" class="btn btn-secondary" onclick="cerrarEditarVehiculo()">✖️ Cancelar</button>
+                </div>
+                <form id="edit-vehicle-form" onsubmit="handleUpdateVehicle(event)">
+                    <input type="hidden" id="ev-id">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="ev-tipo">Tipo de Vehículo</label>
+                            <select id="ev-tipo" class="form-control">
+                                <option value="carro">🚗 Carro</option>
+                                <option value="motocicleta">🏍️ Motocicleta</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="ev-placa">Placa</label>
+                            <input type="text" id="ev-placa" class="form-control" required minlength="3" maxlength="20">
+                        </div>
+                        <div class="form-group">
+                            <label for="ev-marca">Marca</label>
+                            <input type="text" id="ev-marca" class="form-control" required minlength="2" maxlength="50">
+                        </div>
+                        <div class="form-group">
+                            <label for="ev-modelo">Modelo</label>
+                            <input type="text" id="ev-modelo" class="form-control" required minlength="1" maxlength="50">
+                        </div>
+                        <div class="form-group">
+                            <label for="ev-km">Kilometraje Actual (km)</label>
+                            <input type="number" id="ev-km" class="form-control" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="ev-fecha-compra">Fecha de Compra (Opcional)</label>
+                            <input type="date" id="ev-fecha-compra" class="form-control">
+                        </div>
+                    </div>
+                    <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+
             <!-- PANEL: LISTA DE VEHÍCULOS -->
             <div class="panel">
                 <div class="panel-header">

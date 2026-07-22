@@ -7,6 +7,7 @@ let skip = 0;
 const limit = 5;
 let currentVehiculoId = null;
 let sugerenciaActual = null;
+let vehiculosCache = [];
 
 // --- INICIALIZACIÓN AL CARGAR LA PÁGINA ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -143,6 +144,7 @@ async function cargarVehiculos() {
         const vehiculos = await res.json();
 
         if (!res.ok) throw new Error('Error al cargar vehículos');
+        vehiculosCache = vehiculos;
 
         const tbody = document.getElementById('vehicles-tbody');
         tbody.innerHTML = '';
@@ -155,7 +157,7 @@ async function cargarVehiculos() {
             vehiculos.forEach(v => {
                 const tr = document.createElement('tr');
                 const tipoIcon = v.tipo === 'motocicleta' ? '🏍️ Moto' : '🚗 Carro';
-                const kmText = v.kilometraje_actual ? `${v.kilometraje_actual.toLocaleString('es-CO')} km` : '0 km';
+                const kmText = v.kilometraje_actual !== null && v.kilometraje_actual !== undefined ? `${v.kilometraje_actual.toLocaleString('es-CO')} km` : '0 km';
 
                 tr.innerHTML = `
                     <td><strong>#${v.id}</strong></td>
@@ -164,8 +166,11 @@ async function cargarVehiculos() {
                     <td>${v.marca} ${v.modelo}</td>
                     <td>${kmText}</td>
                     <td>
-                        <button class="btn btn-secondary" onclick="verMantenimientos(${v.id}, '${v.placa}')">🛠️ Mantenimientos</button>
-                        <button class="btn btn-danger" ${!esAdmin ? 'disabled title="Se requiere rol de Administrador"' : ''} onclick="eliminarVehiculo(${v.id})">🗑️ Eliminar</button>
+                        <div class="action-buttons">
+                            <button class="btn btn-secondary" onclick="verMantenimientos(${v.id}, '${v.placa}')">🛠️ Mantenimientos</button>
+                            <button class="btn btn-secondary" onclick="abrirEditarVehiculo(${v.id})">✏️ Editar</button>
+                            <button class="btn btn-danger" ${!esAdmin ? 'disabled title="Se requiere rol de Administrador"' : ''} onclick="eliminarVehiculo(${v.id})">🗑️ Eliminar</button>
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -214,6 +219,72 @@ async function handleCreateVehicle(event) {
         mostrarNotificacion(`Vehículo ${data.placa} registrado con éxito`);
         document.getElementById('vehicle-form').reset();
         cargarVehiculos();
+    } catch (err) {
+        mostrarNotificacion(err.message, 'error');
+    }
+}
+
+function abrirEditarVehiculo(vehiculoId) {
+    const v = vehiculosCache.find(item => item.id === vehiculoId);
+    if (!v) return;
+
+    document.getElementById('ev-id').value = v.id;
+    document.getElementById('ev-tipo').value = v.tipo || 'carro';
+    document.getElementById('ev-placa').value = v.placa;
+    document.getElementById('ev-marca').value = v.marca;
+    document.getElementById('ev-modelo').value = v.modelo;
+    document.getElementById('ev-km').value = v.kilometraje_actual !== null ? v.kilometraje_actual : 0;
+    
+    if (v.fecha_compra) {
+        const fechaStr = new Date(v.fecha_compra).toISOString().split('T')[0];
+        document.getElementById('ev-fecha-compra').value = fechaStr;
+    } else {
+        document.getElementById('ev-fecha-compra').value = '';
+    }
+
+    const editPanel = document.getElementById('edit-vehicle-panel');
+    editPanel.classList.remove('hidden');
+    editPanel.scrollIntoView({ behavior: 'smooth' });
+}
+
+function cerrarEditarVehiculo() {
+    document.getElementById('edit-vehicle-panel').classList.add('hidden');
+    document.getElementById('edit-vehicle-form').reset();
+}
+
+async function handleUpdateVehicle(event) {
+    event.preventDefault();
+    const vehiculoId = parseInt(document.getElementById('ev-id').value);
+    const tipo = document.getElementById('ev-tipo').value;
+    const placa = document.getElementById('ev-placa').value.trim().toUpperCase();
+    const marca = document.getElementById('ev-marca').value.trim();
+    const modelo = document.getElementById('ev-modelo').value.trim();
+    const kmVal = document.getElementById('ev-km').value;
+    const kilometraje_actual = kmVal !== '' ? parseInt(kmVal) : 0;
+    const fechaCompraVal = document.getElementById('ev-fecha-compra').value;
+    const fecha_compra = fechaCompraVal ? new Date(fechaCompraVal).toISOString() : null;
+
+    try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/vehiculos/${vehiculoId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentToken}`
+            },
+            body: JSON.stringify({ placa, marca, modelo, tipo, kilometraje_actual, fecha_compra })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Error al actualizar vehículo');
+
+        mostrarNotificacion(`Vehículo #${vehiculoId} actualizado correctamente`);
+        cerrarEditarVehiculo();
+        cargarVehiculos();
+
+        if (currentVehiculoId === vehiculoId) {
+            cargarRecomendacionProximoMantenimiento(vehiculoId);
+        }
+
     } catch (err) {
         mostrarNotificacion(err.message, 'error');
     }
@@ -306,8 +377,8 @@ async function cargarMantenimientosVehiculo(vehiculoId) {
 
             mantenimientos.forEach(m => {
                 const tr = document.createElement('tr');
-                const costo = m.costo_estimado ? `$ ${m.costo_estimado.toLocaleString('es-CO')}` : 'N/A';
-                const km = m.kilometraje ? `${m.kilometraje.toLocaleString('es-CO')} km` : 'N/A';
+                const costo = m.costo_estimado !== null && m.costo_estimado !== undefined ? `$ ${m.costo_estimado.toLocaleString('es-CO')}` : 'N/A';
+                const km = m.kilometraje !== null && m.kilometraje !== undefined ? `${m.kilometraje.toLocaleString('es-CO')} km` : 'N/A';
                 const fechaProg = m.fecha_programada ? new Date(m.fecha_programada).toLocaleDateString('es-CO') : 'Manual';
 
                 tr.innerHTML = `
@@ -318,8 +389,10 @@ async function cargarMantenimientosVehiculo(vehiculoId) {
                     <td>${km}</td>
                     <td>${fechaProg}</td>
                     <td>
-                        <button class="btn btn-secondary" onclick="cambiarEstadoMantenimiento(${m.id}, '${m.descripcion}', '${m.estado}', ${m.costo_estimado || 0}, ${m.kilometraje || 0})">✏️ Cambiar Estado</button>
-                        <button class="btn btn-danger" ${!esAdmin ? 'disabled title="Se requiere rol de Administrador"' : ''} onclick="eliminarMantenimiento(${m.id})">🗑️ Eliminar</button>
+                        <div class="action-buttons">
+                            <button class="btn btn-secondary" onclick="cambiarEstadoMantenimiento(${m.id}, '${m.descripcion}', '${m.estado}', ${m.costo_estimado || 0}, ${m.kilometraje || 0})">✏️ Cambiar Estado</button>
+                            <button class="btn btn-danger" ${!esAdmin ? 'disabled title="Se requiere rol de Administrador"' : ''} onclick="eliminarMantenimiento(${m.id})">🗑️ Eliminar</button>
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -359,6 +432,7 @@ async function handleCreateMaintenance(event) {
         document.getElementById('maintenance-form').reset();
         document.getElementById('m-vehiculo-id').value = vehiculo_id;
         cargarMantenimientosVehiculo(vehiculo_id);
+        cargarRecomendacionProximoMantenimiento(vehiculo_id);
     } catch (err) {
         mostrarNotificacion(err.message, 'error');
     }
@@ -393,6 +467,7 @@ async function cambiarEstadoMantenimiento(mantenimientoId, descripcion, estadoAc
 
         mostrarNotificacion(`Estado de mantenimiento #${mantenimientoId} actualizado a ${nuevoEstado}`);
         cargarMantenimientosVehiculo(currentVehiculoId);
+        cargarRecomendacionProximoMantenimiento(currentVehiculoId);
     } catch (err) {
         mostrarNotificacion(err.message, 'error');
     }
@@ -412,6 +487,7 @@ async function eliminarMantenimiento(mantenimientoId) {
 
         mostrarNotificacion(data.mensaje || 'Mantenimiento eliminado correctamente');
         cargarMantenimientosVehiculo(currentVehiculoId);
+        cargarRecomendacionProximoMantenimiento(currentVehiculoId);
     } catch (err) {
         mostrarNotificacion(err.message, 'error');
     }

@@ -225,6 +225,14 @@ body {
     filter: grayscale(1);
 }
 
+/* --- ACCIONES Y ESPACIADO DE BOTONES --- */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
 /* --- TABLAS --- */
 .table-responsive {
     width: 100%;
