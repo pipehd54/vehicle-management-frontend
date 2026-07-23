@@ -43,7 +43,10 @@ function actualizarInterfazAuth() {
         const roleClass = currentUser.rol === 'administrador' ? 'role-administrador' : 'role-mecanico';
 
         userStatusBar.innerHTML = `
-            <span style="font-size: 0.9rem;">👤 <strong>${currentUser.email}</strong></span>
+            <span style="font-size: 0.85rem; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 0.35rem;">
+                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <strong style="color: var(--text-primary);">${currentUser.email}</strong>
+            </span>
             <span class="role-badge ${roleClass}">${currentUser.rol}</span>
             <button class="btn btn-secondary" onclick="cerrarSesion()">Cerrar Sesión</button>
         `;
@@ -62,12 +65,25 @@ function toggleAuthMode() {
     const roleGroup = document.getElementById('role-group');
 
     if (isLoginMode) {
-        title.textContent = '🔑 Iniciar Sesión';
+        title.innerHTML = `
+            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.778-7.778zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+            </svg>
+            <span>Iniciar Sesión</span>
+        `;
         toggleBtn.textContent = '¿No tienes cuenta? Regístrate';
         submitBtn.textContent = 'Ingresar al Taller';
         roleGroup.classList.add('hidden');
     } else {
-        title.textContent = '📝 Crear Cuenta';
+        title.innerHTML = `
+            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="8.5" cy="7" r="4"></circle>
+                <line x1="20" y1="8" x2="20" y2="14"></line>
+                <line x1="23" y1="11" x2="17" y2="11"></line>
+            </svg>
+            <span>Crear Cuenta</span>
+        `;
         toggleBtn.textContent = '¿Ya tienes cuenta? Inicia Sesión';
         submitBtn.textContent = 'Registrarse';
         roleGroup.classList.remove('hidden');
@@ -156,20 +172,39 @@ async function cargarVehiculos() {
 
             vehiculos.forEach(v => {
                 const tr = document.createElement('tr');
-                const tipoIcon = v.tipo === 'motocicleta' ? '🏍️ Moto' : '🚗 Carro';
+                const isMoto = v.tipo === 'motocicleta';
+                const tipoLabel = isMoto ? 'Moto' : 'Carro';
                 const kmText = v.kilometraje_actual !== null && v.kilometraje_actual !== undefined ? `${v.kilometraje_actual.toLocaleString('es-CO')} km` : '0 km';
 
                 tr.innerHTML = `
                     <td><strong>#${v.id}</strong></td>
-                    <td><span class="status-badge status-en_proceso">${tipoIcon}</span></td>
-                    <td><span style="font-family: monospace; font-weight: bold; color: var(--accent);">${v.placa}</span></td>
+                    <td>
+                        <span class="status-badge status-en_proceso">
+                            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                ${isMoto 
+                                    ? '<circle cx="5.5" cy="17.5" r="3.5"></circle><circle cx="18.5" cy="17.5" r="3.5"></circle><path d="M15 6h2l3 6.5-1.5 1.5M9 17.5l3-7.5h3"></path>'
+                                    : '<rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle>'}
+                            </svg>
+                            <span>${tipoLabel}</span>
+                        </span>
+                    </td>
+                    <td><span style="font-family: monospace; font-weight: 700; color: var(--accent);">${v.placa}</span></td>
                     <td>${v.marca} ${v.modelo}</td>
                     <td>${kmText}</td>
                     <td>
                         <div class="action-buttons">
-                            <button class="btn btn-secondary" onclick="verMantenimientos(${v.id}, '${v.placa}')">🛠️ Mantenimientos</button>
-                            <button class="btn btn-secondary" onclick="abrirEditarVehiculo(${v.id})">✏️ Editar</button>
-                            <button class="btn btn-danger" ${!esAdmin ? 'disabled title="Se requiere rol de Administrador"' : ''} onclick="eliminarVehiculo(${v.id})">🗑️ Eliminar</button>
+                            <button class="btn btn-secondary" onclick="verMantenimientos(${v.id}, '${v.placa}')">
+                                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                                <span>Mantenimientos</span>
+                            </button>
+                            <button class="btn btn-secondary" onclick="abrirEditarVehiculo(${v.id})">
+                                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                <span>Editar</span>
+                            </button>
+                            <button class="btn btn-danger" ${!esAdmin ? 'disabled title="Se requiere rol de Administrador"' : ''} onclick="eliminarVehiculo(${v.id})">
+                                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                <span>Eliminar</span>
+                            </button>
                         </div>
                     </td>
                 `;
@@ -315,7 +350,7 @@ async function eliminarVehiculo(vehiculoId) {
 async function verMantenimientos(vehiculoId, placa) {
     currentVehiculoId = vehiculoId;
     document.getElementById('m-vehiculo-id').value = vehiculoId;
-    document.getElementById('maintenance-title').textContent = `🛠️ Mantenimientos del Vehículo: ${placa} (#${vehiculoId})`;
+    document.getElementById('maintenance-title-text').textContent = `Mantenimientos del Vehículo: ${placa} (#${vehiculoId})`;
     document.getElementById('maintenance-section').classList.remove('hidden');
 
     document.getElementById('maintenance-section').scrollIntoView({ behavior: 'smooth' });
@@ -377,7 +412,7 @@ async function cargarMantenimientosVehiculo(vehiculoId) {
 
             mantenimientos.forEach(m => {
                 const tr = document.createElement('tr');
-                const costo = m.costo_estimado !== null && m.costo_estimado !== undefined ? `$ ${m.costo_estimado.toLocaleString('es-CO')}` : 'N/A';
+                const costo = m.costo_estimado !== null && m.costo_estimado !== undefined ? `$ ${m.costo_estimado.toLocaleString('es-CO')} COP` : 'N/A';
                 const km = m.kilometraje !== null && m.kilometraje !== undefined ? `${m.kilometraje.toLocaleString('es-CO')} km` : 'N/A';
                 const fechaProg = m.fecha_programada ? new Date(m.fecha_programada).toLocaleDateString('es-CO') : 'Manual';
 
@@ -390,8 +425,14 @@ async function cargarMantenimientosVehiculo(vehiculoId) {
                     <td>${fechaProg}</td>
                     <td>
                         <div class="action-buttons">
-                            <button class="btn btn-secondary" onclick="cambiarEstadoMantenimiento(${m.id}, '${m.descripcion}', '${m.estado}', ${m.costo_estimado || 0}, ${m.kilometraje || 0})">✏️ Cambiar Estado</button>
-                            <button class="btn btn-danger" ${!esAdmin ? 'disabled title="Se requiere rol de Administrador"' : ''} onclick="eliminarMantenimiento(${m.id})">🗑️ Eliminar</button>
+                            <button class="btn btn-secondary" onclick="cambiarEstadoMantenimiento(${m.id}, '${m.descripcion}', '${m.estado}', ${m.costo_estimado || 0}, ${m.kilometraje || 0})">
+                                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                <span>Cambiar Estado</span>
+                            </button>
+                            <button class="btn btn-danger" ${!esAdmin ? 'disabled title="Se requiere rol de Administrador"' : ''} onclick="eliminarMantenimiento(${m.id})">
+                                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                <span>Eliminar</span>
+                            </button>
                         </div>
                     </td>
                 `;
