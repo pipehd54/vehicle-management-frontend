@@ -1,52 +1,78 @@
-# Vehicle Management Frontend 🚗🛠️
+# Vehicle Management Client
 
-Aplicación web cliente (Single Page Application - SPA) construida con **HTML5, CSS3 y Vanilla JavaScript** para consumir la API REST del taller mecánico [vehicle-management-backend](https://github.com/pipehd54/vehicle-management-backend).
+Aplicación web cliente (Single Page Application - SPA) construida con **HTML5, CSS3 y Vanilla JavaScript** que consume la API REST del sistema de gestión de taller mecánico [vehicle-management-backend](https://github.com/pipehd54/vehicle-management-backend).
 
-Este repositorio forma parte de un proyecto de portafolio para demostrar la comunicación independiente cliente-servidor con autenticación JWT y control de acceso basado en roles (RBAC).
+El proyecto demuestra una arquitectura cliente-servidor desacoplada con autenticación mediante Json Web Tokens (JWT), control de acceso basado en roles (RBAC) y un sistema de recomendaciones preventivas según el cronograma oficial del manual del propietario.
 
 ---
 
-## 🌐 Aplicación en Producción
+## Enlaces del Proyecto
 
-- **Demo en Vivo (Vercel):** [https://vehicle-management-frontend-ruby.vercel.app/](https://vehicle-management-frontend-ruby.vercel.app/)
+- **Aplicación en Producción (Vercel):** [https://vehicle-management-frontend-ruby.vercel.app/](https://vehicle-management-frontend-ruby.vercel.app/)
 - **API Backend en Producción (Railway):** [https://vehicle-management-backend-production-e9f4.up.railway.app](https://vehicle-management-backend-production-e9f4.up.railway.app/)
-- **Documentación Interactiva Swagger:** [https://vehicle-management-backend-production-e9f4.up.railway.app/docs](https://vehicle-management-backend-production-e9f4.up.railway.app/docs)
+- **Documentación Swagger / OpenAPI:** [https://vehicle-management-backend-production-e9f4.up.railway.app/docs](https://vehicle-management-backend-production-e9f4.up.railway.app/docs)
+- **Repositorio Backend:** [https://github.com/pipehd54/vehicle-management-backend](https://github.com/pipehd54/vehicle-management-backend)
 
 ---
 
-## 🎨 Características
+## Características Principales
 
-- **Autenticación e Inicio de Sesión:** Permite registrarse o iniciar sesión obteniendo un token JWT que se almacena en el cliente.
-- **Diferenciación de Roles (RBAC en UI):**
-  - **Mecánico:** Puede ver vehículos, registrar vehículos, agregar mantenimientos y cambiar estados (`pendiente`, `en_proceso`, `completado`).
-  - **Administrador:** Además de las funciones anteriores, tiene habilitados los botones de eliminación de vehículos y órdenes de trabajo.
-- **Gestión de Vehículos:** Listado con paginación (`skip`, `limit`) y registro de nuevos vehículos.
-- **Gestión de Mantenimientos:** Filtrado de órdenes por vehículo en tiempo real.
-- **Diseño Moderno y Responsivo:** CSS3 nativo con tema oscuro, notificaciones *toast*, tablas responsivas y badges de estado.
+### Autenticación y Control de Acceso (RBAC)
+- **Inicio de Sesión y Registro:** Gestión de sesiones persistentes mediante JWT (`localStorage`).
+- **Rol Mecánico:** Permite visualizar vehículos, registrar unidades, actualizar kilometrajes y crear o modificar estados de órdenes de trabajo (`pendiente`, `en_proceso`, `completado`).
+- **Rol Administrador:** Opciones avanzadas que incluyen permisos de eliminación para vehículos y órdenes de mantenimiento.
+
+### Gestión de Vehículos y Mantenimientos
+- **Categorización por Tipo:** Compatibilidad con carros y motocicletas, registrando marca, modelo, placa, fecha de compra y kilometraje actual.
+- **Edición Dinámica:** Actualización de kilometraje en tiempo real con recálculo automático de intervalos.
+- **Recomendación Inteligente de Mantenimiento:** Integración con el motor del backend para calcular el próximo servicio preventivo (kilometraje objetivo, kilómetros faltantes y plazo en días según el servicio anterior).
+
+### Arquitectura de Interfaz y Diseño UX/UI
+- **Diseño Responsivo (Mobile-First):** Layouts fluidos mediante CSS Grid y Flexbox adaptables a dispositivos móviles, tablets y monitores de escritorio.
+- **Sistema de Iconos Vectoriales (SVG):** Iconografía integrada mediante vectores limpios para garantizar nitidez multiplataforma.
+- **Tema Oscuro Profesional:** Paleta de colores neutros con alto contraste tipográfico y notificaciones emergentes de estado (*Toast Alerts*).
 
 ---
 
-## 🛠️ Tecnologías Utilizadas
+## Tecnologías Utilizadas
 
-- **HTML5 Semántico**
-- **CSS3 Nativo** (Variables CSS, Flexbox, Grid, Animaciones)
-- **Vanilla JavaScript ES6+** (`Fetch API`, `Async/Await`, Manipulación del DOM)
+- **HTML5 Semántico:** Estructura modular y accesible.
+- **CSS3 Nativo:** Variables CSS, Flexbox, CSS Grid y Media Queries sin dependencias externas.
+- **JavaScript ES6+:** Manipulación asíncrona del DOM (`Fetch API`, `Async/Await`, `Event Loop`).
 
 ---
 
-## 🚀 Cómo ejecutar localmente
+## Estructura del Proyecto
 
-1. Clona este repositorio:
+```text
+vehicle-management-frontend/
+├── index.html       # Estructura principal de la aplicación SPA
+├── styles.css       # Sistema de diseño, variables CSS y estilos responsive
+├── app.js           # Lógica de la aplicación, peticiones API y manejo de estado
+├── config.js        # Configuración de URLs de producción y entorno local
+└── README.md        # Documentación del proyecto
+```
+
+---
+
+## Ejecución en Entorno Local
+
+1. Clona el repositorio:
    ```bash
    git clone https://github.com/pipehd54/vehicle-management-frontend.git
    ```
 
-2. Asegúrate de que el Backend (`vehicle-management-backend`) esté ejecutándose en `http://localhost:8000` o configura `config.js` apuntando a tu servidor de producción.
+2. Accede al directorio del proyecto:
+   ```bash
+   cd vehicle-management-frontend
+   ```
 
-3. Abre el archivo `index.html` en tu navegador preferido o utilízalo con una extensión como **Live Server** en VS Code.
+3. Revisa el archivo `config.js` y asegúrate de que Apunte a tu servidor local (`http://localhost:8000`) o a la API en producción.
+
+4. Abre el archivo `index.html` en un navegador web o ejecútalo mediante una extensión de servidor estático como **Live Server**.
 
 ---
 
-## 🔗 Enlaces Relacionados
+## Licencia y Uso
 
-- **Repositorio Backend:** [https://github.com/pipehd54/vehicle-management-backend](https://github.com/pipehd54/vehicle-management-backend)
+Este proyecto ha sido desarrollado con fines de portafolio y demostración de arquitectura de software web.
