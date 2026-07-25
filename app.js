@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     actualizarInterfazAuth();
     if (currentToken) {
         cargarVehiculos();
+        actualizarMetricasTaller();
     }
 });
 
@@ -62,18 +63,16 @@ function toggleAuthMode() {
     const title = document.getElementById('auth-title');
     const toggleBtn = document.getElementById('toggle-auth-btn');
     const submitBtn = document.getElementById('auth-submit-btn');
-    const roleGroup = document.getElementById('role-group');
 
     if (isLoginMode) {
         title.innerHTML = `
             <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.778-7.778zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
             </svg>
-            <span>Iniciar Sesión</span>
+            <span>Acceso al Taller</span>
         `;
         toggleBtn.textContent = '¿No tienes cuenta? Regístrate';
         submitBtn.textContent = 'Ingresar al Taller';
-        roleGroup.classList.add('hidden');
     } else {
         title.innerHTML = `
             <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -82,11 +81,10 @@ function toggleAuthMode() {
                 <line x1="20" y1="8" x2="20" y2="14"></line>
                 <line x1="23" y1="11" x2="17" y2="11"></line>
             </svg>
-            <span>Crear Cuenta</span>
+            <span>Registro de Usuario</span>
         `;
         toggleBtn.textContent = '¿Ya tienes cuenta? Inicia Sesión';
         submitBtn.textContent = 'Registrarse';
-        roleGroup.classList.remove('hidden');
     }
 }
 
@@ -104,7 +102,6 @@ async function handleAuthSubmit(event) {
     event.preventDefault();
     const email = document.getElementById('auth-email').value;
     const password = document.getElementById('auth-password').value;
-    const rol = document.getElementById('auth-role').value;
 
     try {
         if (isLoginMode) {
@@ -133,13 +130,14 @@ async function handleAuthSubmit(event) {
             localStorage.setItem('user_data', JSON.stringify(currentUser));
             actualizarInterfazAuth();
             cargarVehiculos();
-            mostrarNotificacion('¡Bienvenido al taller!');
+            actualizarMetricasTaller();
+            mostrarNotificacion('¡Bienvenido al panel de control del taller!');
 
         } else {
             const res = await fetch(`${CONFIG.API_BASE_URL}/usuarios/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password, rol })
+                body: JSON.stringify({ email, password })
             });
 
             const data = await res.json();
@@ -150,6 +148,31 @@ async function handleAuthSubmit(event) {
         }
     } catch (err) {
         mostrarNotificacion(err.message, 'error');
+    }
+}
+
+// --- ACTUALIZACIÓN DE MÉTRICAS KPI DEL TALLER ---
+async function actualizarMetricasTaller() {
+    try {
+        const resV = await fetch(`${CONFIG.API_BASE_URL}/vehiculos/?skip=0&limit=100`);
+        const vehiculos = await resV.json();
+        if (resV.ok && Array.isArray(vehiculos)) {
+            document.getElementById('kpi-total-vehiculos').textContent = vehiculos.length;
+        }
+
+        const resM = await fetch(`${CONFIG.API_BASE_URL}/mantenimientos/?skip=0&limit=100`);
+        const mantenimientos = await resM.json();
+        if (resM.ok && Array.isArray(mantenimientos)) {
+            const pendientes = mantenimientos.filter(m => m.estado === 'pendiente').length;
+            const enProceso = mantenimientos.filter(m => m.estado === 'en_proceso').length;
+            const completados = mantenimientos.filter(m => m.estado === 'completado').length;
+
+            document.getElementById('kpi-pendientes').textContent = pendientes;
+            document.getElementById('kpi-en-proceso').textContent = enProceso;
+            document.getElementById('kpi-completados').textContent = completados;
+        }
+    } catch (err) {
+        // Silencioso si falla la métrica
     }
 }
 
@@ -188,14 +211,14 @@ async function cargarVehiculos() {
                             <span>${tipoLabel}</span>
                         </span>
                     </td>
-                    <td><span style="font-family: monospace; font-weight: 700; color: var(--accent);">${v.placa}</span></td>
-                    <td>${v.marca} ${v.modelo}</td>
-                    <td>${kmText}</td>
+                    <td><span class="plate-badge">${v.placa}</span></td>
+                    <td><strong>${v.marca}</strong> ${v.modelo}</td>
+                    <td><span class="odometer-badge">${kmText}</span></td>
                     <td>
                         <div class="action-buttons">
                             <button class="btn btn-secondary" onclick="verMantenimientos(${v.id}, '${v.placa}')">
                                 <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
-                                <span>Mantenimientos</span>
+                                <span>Plan de Mantenimientos</span>
                             </button>
                             <button class="btn btn-secondary" onclick="abrirEditarVehiculo(${v.id})">
                                 <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
@@ -249,11 +272,12 @@ async function handleCreateVehicle(event) {
         });
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'No se pudo registrar el vehículo');
+        if (!res.ok) throw new Error(data.detail || 'No se pudo registrar la ficha del vehículo');
 
-        mostrarNotificacion(`Vehículo ${data.placa} registrado con éxito`);
+        mostrarNotificacion(`Vehículo [${data.placa}] ingresado con éxito al taller`);
         document.getElementById('vehicle-form').reset();
         cargarVehiculos();
+        actualizarMetricasTaller();
     } catch (err) {
         mostrarNotificacion(err.message, 'error');
     }
@@ -312,9 +336,10 @@ async function handleUpdateVehicle(event) {
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || 'Error al actualizar vehículo');
 
-        mostrarNotificacion(`Vehículo #${vehiculoId} actualizado correctamente`);
+        mostrarNotificacion(`Ficha del vehículo [${data.placa}] actualizada correctamente`);
         cerrarEditarVehiculo();
         cargarVehiculos();
+        actualizarMetricasTaller();
 
         if (currentVehiculoId === vehiculoId) {
             cargarRecomendacionProximoMantenimiento(vehiculoId);
@@ -339,6 +364,7 @@ async function eliminarVehiculo(vehiculoId) {
 
         mostrarNotificacion(data.mensaje || 'Vehículo eliminado correctamente');
         cargarVehiculos();
+        actualizarMetricasTaller();
         if (currentVehiculoId === vehiculoId) cerrarMantenimientos();
 
     } catch (err) {
@@ -350,7 +376,7 @@ async function eliminarVehiculo(vehiculoId) {
 async function verMantenimientos(vehiculoId, placa) {
     currentVehiculoId = vehiculoId;
     document.getElementById('m-vehiculo-id').value = vehiculoId;
-    document.getElementById('maintenance-title-text').textContent = `Mantenimientos del Vehículo: ${placa} (#${vehiculoId})`;
+    document.getElementById('maintenance-title-text').textContent = `Hoja de Vida del Vehículo: ${placa} (#${vehiculoId})`;
     document.getElementById('maintenance-section').classList.remove('hidden');
 
     document.getElementById('maintenance-section').scrollIntoView({ behavior: 'smooth' });
@@ -406,7 +432,7 @@ async function cargarMantenimientosVehiculo(vehiculoId) {
         tbody.innerHTML = '';
 
         if (mantenimientos.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-secondary);">No hay mantenimientos registrados para este vehículo.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-secondary);">No hay ordenes de mantenimiento registradas para este vehículo.</td></tr>`;
         } else {
             const esAdmin = currentUser && currentUser.rol === 'administrador';
 
@@ -420,14 +446,14 @@ async function cargarMantenimientosVehiculo(vehiculoId) {
                     <td><strong>#${m.id}</strong></td>
                     <td>${m.descripcion}</td>
                     <td><span class="status-badge status-${m.estado}">${m.estado.replace('_', ' ')}</span></td>
-                    <td>${costo}</td>
-                    <td>${km}</td>
+                    <td><strong>${costo}</strong></td>
+                    <td><span class="odometer-badge">${km}</span></td>
                     <td>${fechaProg}</td>
                     <td>
                         <div class="action-buttons">
                             <button class="btn btn-secondary" onclick="cambiarEstadoMantenimiento(${m.id}, '${m.descripcion}', '${m.estado}', ${m.costo_estimado || 0}, ${m.kilometraje || 0})">
                                 <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                <span>Cambiar Estado</span>
+                                <span>Estado Fosa</span>
                             </button>
                             <button class="btn btn-danger" ${!esAdmin ? 'disabled title="Se requiere rol de Administrador"' : ''} onclick="eliminarMantenimiento(${m.id})">
                                 <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -467,20 +493,21 @@ async function handleCreateMaintenance(event) {
         });
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'Error al agregar mantenimiento');
+        if (!res.ok) throw new Error(data.detail || 'Error al agregar orden de trabajo');
 
-        mostrarNotificacion('Mantenimiento agregado correctamente');
+        mostrarNotificacion('Orden de trabajo registrada correctamente');
         document.getElementById('maintenance-form').reset();
         document.getElementById('m-vehiculo-id').value = vehiculo_id;
         cargarMantenimientosVehiculo(vehiculo_id);
         cargarRecomendacionProximoMantenimiento(vehiculo_id);
+        actualizarMetricasTaller();
     } catch (err) {
         mostrarNotificacion(err.message, 'error');
     }
 }
 
 async function cambiarEstadoMantenimiento(mantenimientoId, descripcion, estadoActual, costoEstimado, kilometraje) {
-    const nuevoEstado = prompt(`Ingresa el nuevo estado para el mantenimiento #${mantenimientoId}:\nOpciones: pendiente, en_proceso, completado`, estadoActual);
+    const nuevoEstado = prompt(`Ingresa el nuevo estado para la orden de trabajo #${mantenimientoId}:\nOpciones: pendiente, en_proceso, completado`, estadoActual);
     if (!nuevoEstado || nuevoEstado === estadoActual) return;
 
     if (!['pendiente', 'en_proceso', 'completado'].includes(nuevoEstado)) {
@@ -504,18 +531,19 @@ async function cambiarEstadoMantenimiento(mantenimientoId, descripcion, estadoAc
         });
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'Error al actualizar el mantenimiento');
+        if (!res.ok) throw new Error(data.detail || 'Error al actualizar la orden de trabajo');
 
-        mostrarNotificacion(`Estado de mantenimiento #${mantenimientoId} actualizado a ${nuevoEstado}`);
+        mostrarNotificacion(`Estado de orden #${mantenimientoId} actualizado a ${nuevoEstado}`);
         cargarMantenimientosVehiculo(currentVehiculoId);
         cargarRecomendacionProximoMantenimiento(currentVehiculoId);
+        actualizarMetricasTaller();
     } catch (err) {
         mostrarNotificacion(err.message, 'error');
     }
 }
 
 async function eliminarMantenimiento(mantenimientoId) {
-    if (!confirm(`¿Estás seguro de eliminar el mantenimiento #${mantenimientoId}?`)) return;
+    if (!confirm(`¿Estás seguro de eliminar la orden de trabajo #${mantenimientoId}?`)) return;
 
     try {
         const res = await fetch(`${CONFIG.API_BASE_URL}/mantenimientos/${mantenimientoId}`, {
@@ -524,11 +552,12 @@ async function eliminarMantenimiento(mantenimientoId) {
         });
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'Error al eliminar mantenimiento');
+        if (!res.ok) throw new Error(data.detail || 'Error al eliminar orden de trabajo');
 
-        mostrarNotificacion(data.mensaje || 'Mantenimiento eliminado correctamente');
+        mostrarNotificacion(data.mensaje || 'Orden de trabajo eliminada correctamente');
         cargarMantenimientosVehiculo(currentVehiculoId);
         cargarRecomendacionProximoMantenimiento(currentVehiculoId);
+        actualizarMetricasTaller();
     } catch (err) {
         mostrarNotificacion(err.message, 'error');
     }

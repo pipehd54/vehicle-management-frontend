@@ -1,30 +1,32 @@
-/* --- SISTEMA DE DISEÑO / VARIABLES --- */
+/* --- SISTEMA DE DISEÑO / PALETA INDUSTRIAL TALLER --- */
 :root {
-    --bg-primary: #0b0f17;
-    --bg-card: #161f30;
-    --bg-card-hover: #1e293b;
-    --bg-input: #0f172a;
+    --bg-primary: #101216;
+    --bg-card: #181b22;
+    --bg-card-hover: #222632;
+    --bg-input: #12141a;
     
-    --text-primary: #f8fafc;
+    --text-primary: #f1f5f9;
     --text-secondary: #94a3b8;
     --text-muted: #64748b;
     
-    --primary: #2563eb;
-    --primary-hover: #1d4ed8;
-    --accent: #0284c7;
-    --danger: #dc2626;
-    --danger-hover: #b91c1c;
-    --success: #059669;
-    --warning: #d97706;
+    --primary: #f59e0b; /* Ámbar Industrial / Seguridad */
+    --primary-hover: #d97706;
+    --accent: #38bdf8; /* Azul Eléctrico de Tacómetro */
+    --danger: #ef4444; /* Rojo de Alerta */
+    --danger-hover: #dc2626;
+    --success: #10b981; /* Verde Inspección OK */
+    --warning: #f97316; /* Naranja en Fosa */
     
-    --border-color: #26334d;
+    --border-color: #2a3040;
     --radius-sm: 6px;
     --radius-md: 10px;
     --radius-lg: 14px;
     --font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+    --font-mono: 'JetBrains Mono', 'Roboto Mono', monospace;
+    
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
 }
 
 * {
@@ -42,6 +44,11 @@ body {
     flex-direction: column;
 }
 
+/* --- CLASE MONOESPACIADA DE INSTRUMENTACIÓN --- */
+.mono-font {
+    font-family: var(--font-mono) !important;
+}
+
 /* --- ICONOS SVG --- */
 .icon-svg {
     width: 1.15rem;
@@ -51,7 +58,7 @@ body {
     flex-shrink: 0;
 }
 
-/* --- ENCABEZADO Y NAVEGACIÓN --- */
+/* --- ENCABEZADO Y NAVEGACIÓN INDUSTRIAL --- */
 .navbar {
     background-color: var(--bg-card);
     border-bottom: 1px solid var(--border-color);
@@ -65,17 +72,34 @@ body {
 .brand {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.75rem;
+}
+
+.brand-icon {
+    width: 1.6rem;
+    height: 1.6rem;
+    color: var(--primary);
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-title {
     font-size: 1.15rem;
     font-weight: 700;
     color: var(--text-primary);
     letter-spacing: -0.01em;
+    line-height: 1.2;
 }
 
-.brand-icon {
-    width: 1.4rem;
-    height: 1.4rem;
+.brand-subtitle {
+    font-size: 0.725rem;
     color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
 }
 
 .user-status {
@@ -88,31 +112,105 @@ body {
     padding: 0.25rem 0.65rem;
     border-radius: 9999px;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
     white-space: nowrap;
 }
 
 .role-mecanico {
-    background-color: rgba(37, 99, 235, 0.12);
-    color: #60a5fa;
-    border: 1px solid rgba(37, 99, 235, 0.3);
+    background-color: rgba(245, 158, 11, 0.15);
+    color: var(--primary);
+    border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .role-administrador {
-    background-color: rgba(220, 38, 38, 0.12);
+    background-color: rgba(239, 68, 68, 0.15);
     color: #f87171;
-    border: 1px solid rgba(220, 38, 38, 0.3);
+    border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 /* --- CONTENEDOR PRINCIPAL --- */
 .container {
-    max-width: 1140px;
+    max-width: 1160px;
     width: 100%;
     margin: 2rem auto;
     padding: 0 1.25rem;
     flex: 1;
+}
+
+/* --- BARRA DE MÉTRICAS RÁPIDAS DEL TALLER (KPI GRID) --- */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+}
+
+.kpi-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1.15rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.kpi-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--radius-sm);
+    background-color: rgba(245, 158, 11, 0.12);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    flex-shrink: 0;
+}
+
+.kpi-icon.kpi-warning {
+    background-color: rgba(249, 115, 22, 0.12);
+    color: var(--warning);
+    border-color: rgba(249, 115, 22, 0.25);
+}
+
+.kpi-icon.kpi-accent {
+    background-color: rgba(56, 189, 248, 0.12);
+    color: var(--accent);
+    border-color: rgba(56, 189, 248, 0.25);
+}
+
+.kpi-icon.kpi-success {
+    background-color: rgba(16, 185, 129, 0.12);
+    color: var(--success);
+    border-color: rgba(16, 185, 129, 0.25);
+}
+
+.kpi-icon .icon-svg {
+    width: 1.35rem;
+    height: 1.35rem;
+}
+
+.kpi-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.kpi-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    line-height: 1.1;
+}
+
+.kpi-label {
+    font-size: 0.775rem;
+    color: var(--text-secondary);
+    font-weight: 500;
 }
 
 /* --- SECCIONES / PANELES --- */
@@ -135,16 +233,17 @@ body {
 }
 
 .panel-title {
-    font-size: 1.25rem;
-    font-weight: 600;
+    font-size: 1.2rem;
+    font-weight: 700;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.55rem;
     color: var(--text-primary);
+    letter-spacing: -0.01em;
 }
 
 .panel-title .icon-svg {
-    color: var(--accent);
+    color: var(--primary);
 }
 
 /* --- TARJETA DE AUTENTICACIÓN CENTRADA --- */
@@ -154,11 +253,11 @@ body {
     width: 100%;
 }
 
-/* --- CAJA DE RECOMENDACIÓN DE MANTENIMIENTO --- */
+/* --- CAJA DE RECOMENDACIÓN FICHA TÉCNICA --- */
 .recommendation-box {
-    background-color: rgba(2, 132, 199, 0.08);
-    border: 1px solid rgba(2, 132, 199, 0.25);
-    border-left: 4px solid var(--accent);
+    background-color: rgba(245, 158, 11, 0.07);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-left: 4px solid var(--primary);
     border-radius: var(--radius-md);
     padding: 1.25rem 1.5rem;
 }
@@ -187,9 +286,11 @@ body {
 }
 
 .form-group label {
-    font-size: 0.85rem;
+    font-size: 0.825rem;
     color: var(--text-secondary);
-    font-weight: 500;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
 .form-control {
@@ -207,7 +308,7 @@ body {
 .form-control:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.18);
 }
 
 /* --- INPUT GROUP CON UNIDAD DE MEDIDA --- */
@@ -219,15 +320,16 @@ body {
 }
 
 .input-group .form-control {
-    padding-right: 3rem;
+    padding-right: 3.25rem;
 }
 
 .input-addon {
     position: absolute;
     right: 0.75rem;
-    color: var(--text-muted);
-    font-size: 0.8rem;
-    font-weight: 600;
+    color: var(--primary);
+    font-size: 0.775rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
     pointer-events: none;
     text-transform: uppercase;
 }
@@ -247,12 +349,13 @@ body {
     gap: 0.45rem;
     padding: 0.65rem 1.15rem;
     border-radius: var(--radius-sm);
-    font-weight: 600;
-    font-size: 0.875rem;
+    font-weight: 700;
+    font-size: 0.85rem;
     cursor: pointer;
     border: none;
     transition: background-color 0.15s ease, transform 0.1s ease;
     white-space: nowrap;
+    letter-spacing: 0.02em;
 }
 
 .btn:active {
@@ -261,7 +364,7 @@ body {
 
 .btn-primary {
     background-color: var(--primary);
-    color: white;
+    color: #0f172a;
 }
 
 .btn-primary:hover {
@@ -269,9 +372,9 @@ body {
 }
 
 .btn-danger {
-    background-color: rgba(220, 38, 38, 0.15);
+    background-color: rgba(239, 68, 68, 0.15);
     color: #f87171;
-    border: 1px solid rgba(220, 38, 38, 0.3);
+    border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .btn-danger:hover {
@@ -295,7 +398,7 @@ body {
 }
 
 .btn:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
     filter: grayscale(1);
 }
@@ -306,6 +409,31 @@ body {
     gap: 0.5rem;
     align-items: center;
     flex-wrap: wrap;
+}
+
+/* --- ESTILO PLACA METALIZADA AUTOMOTRIZ --- */
+.plate-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fef08a;
+    color: #0f172a;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    border: 1.5px solid #ca8a04;
+    letter-spacing: 0.08em;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* --- ESTILO ODRÓMETRO DIGITAL --- */
+.odometer-badge {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 0.9rem;
 }
 
 /* --- TABLAS RESPONSIVAS --- */
@@ -328,17 +456,17 @@ body {
 .data-table td {
     padding: 0.85rem 1rem;
     border-bottom: 1px solid var(--border-color);
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     white-space: nowrap;
 }
 
 .data-table th {
-    background-color: rgba(15, 23, 42, 0.8);
-    font-size: 0.75rem;
+    background-color: rgba(18, 20, 26, 0.9);
+    font-size: 0.725rem;
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: 600;
+    letter-spacing: 0.06em;
+    font-weight: 700;
 }
 
 .data-table tbody tr {
@@ -363,7 +491,7 @@ body {
     padding: 0.25rem 0.6rem;
     border-radius: var(--radius-sm);
     font-size: 0.775rem;
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1.2;
 }
 
@@ -373,21 +501,21 @@ body {
 }
 
 .status-pendiente {
-    background-color: rgba(217, 119, 6, 0.15);
-    color: #fbbf24;
-    border: 1px solid rgba(217, 119, 6, 0.3);
+    background-color: rgba(249, 115, 22, 0.15);
+    color: var(--warning);
+    border: 1px solid rgba(249, 115, 22, 0.3);
 }
 
 .status-en_proceso {
-    background-color: rgba(2, 132, 199, 0.15);
-    color: #38bdf8;
-    border: 1px solid rgba(2, 132, 199, 0.3);
+    background-color: rgba(56, 189, 248, 0.15);
+    color: var(--accent);
+    border: 1px solid rgba(56, 189, 248, 0.3);
 }
 
 .status-completado {
-    background-color: rgba(5, 150, 105, 0.15);
+    background-color: rgba(16, 185, 129, 0.15);
     color: #34d399;
-    border: 1px solid rgba(5, 150, 105, 0.3);
+    border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 /* --- PAGINACIÓN --- */
@@ -422,7 +550,8 @@ body {
     border: 1px solid var(--border-color);
     color: var(--text-primary);
     box-shadow: var(--shadow-lg);
-    font-size: 0.9rem;
+    font-size: 0.875rem;
+    font-weight: 500;
     animation: fadeIn 0.25s ease-out;
 }
 
@@ -431,7 +560,7 @@ body {
 }
 
 .toast-success {
-    border-left: 4px solid var(--success);
+    border-left: 4px solid var(--primary);
 }
 
 @keyframes fadeIn {
