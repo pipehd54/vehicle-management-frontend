@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taller Mecánico - Control de Flota & Mantenimiento</title>
+    <meta name="description" content="Sistema de gestión de flota y mantenimiento para talleres mecánicos. Control de vehículos, órdenes de trabajo y plan de mantenimiento preventivo.">
+    <meta name="theme-color" content="#e8930a">
+    <title>Taller Mecánico — Control de Flota & Mantenimiento</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>" type="image/svg+xml">
     <!-- Google Fonts Inter & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,8 +26,26 @@
                 <span class="brand-subtitle">Control de Flota & Servicio</span>
             </div>
         </div>
-        <div class="user-status" id="user-status-bar">
-            <!-- Renderizado dinámico desde app.js -->
+        <div style="display: flex; align-items: center; gap: 0.85rem;">
+            <button type="button" class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" title="Cambiar modo claro/oscuro" aria-label="Cambiar tema">
+                <svg class="icon-svg icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+                <svg class="icon-svg icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+            </button>
+            <div class="user-status" id="user-status-bar">
+                <!-- Renderizado dinámico desde app.js -->
+            </div>
         </div>
     </nav>
 
@@ -366,6 +387,14 @@
         </section>
 
     </main>
+
+    <!-- FOOTER PROFESIONAL -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <span class="footer-text">© <span id="footer-year">2026</span> Taller Mecánico — Sistema de Control de Flota</span>
+            <span class="footer-version">v2.0.0</span>
+        </div>
+    </footer>
 
     <!-- NOTIFICACIONES TOAST -->
     <div id="toast-container"></div>

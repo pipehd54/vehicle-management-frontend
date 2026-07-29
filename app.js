@@ -11,11 +11,35 @@ let vehiculosCache = [];
 
 // --- INICIALIZACIÓN AL CARGAR LA PÁGINA ---
 document.addEventListener('DOMContentLoaded', () => {
+    // Aplicar tema guardado
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
     actualizarInterfazAuth();
     if (currentToken) {
         cargarVehiculos();
         actualizarMetricasTaller();
     }
+
+    // Footer — año dinámico
+    const footerYear = document.getElementById('footer-year');
+    if (footerYear) footerYear.textContent = new Date().getFullYear();
+
+    // Ripple effect en todos los botones
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.btn');
+        if (!btn || btn.disabled) return;
+
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple';
+        const rect = btn.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        ripple.style.width = ripple.style.height = size + 'px';
+        ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+        ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+        btn.appendChild(ripple);
+        ripple.addEventListener('animationend', () => ripple.remove());
+    });
 });
 
 // --- FUNCIONES DE NOTIFICACIÓN (TOASTS) ---
@@ -23,12 +47,61 @@ function mostrarNotificacion(mensaje, tipo = 'success') {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
     toast.className = `toast toast-${tipo}`;
-    toast.textContent = mensaje;
+
+    const text = document.createElement('span');
+    text.textContent = mensaje;
+    toast.appendChild(text);
+
+    // Barra de progreso
+    const progress = document.createElement('div');
+    progress.className = 'toast-progress';
+    toast.appendChild(progress);
+
     container.appendChild(toast);
 
     setTimeout(() => {
-        toast.remove();
+        toast.style.animation = 'toastSlideOut 250ms ease-in forwards';
+        toast.addEventListener('animationend', () => toast.remove());
     }, 4000);
+}
+
+// --- ANIMACIÓN DE CONTEO KPI ---
+function animarValorKPI(elementId, valorFinal) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+
+    const valor = parseInt(valorFinal) || 0;
+    if (valor === 0) { el.textContent = '0'; return; }
+
+    const duracion = 600;
+    const pasos = 30;
+    const incremento = valor / pasos;
+    let actual = 0;
+    let paso = 0;
+
+    const intervalo = setInterval(() => {
+        paso++;
+        actual = Math.min(Math.round(incremento * paso), valor);
+        el.textContent = actual;
+        if (paso >= pasos) {
+            el.textContent = valor;
+            clearInterval(intervalo);
+        }
+    }, duracion / pasos);
+}
+
+// --- MANEJO DE TEMA (CLARO / OSCURO) ---
+function toggleTheme() {
+    document.body.classList.add('theme-transitioning');
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    setTimeout(() => {
+        document.body.classList.remove('theme-transitioning');
+    }, 300);
 }
 
 // --- MANEJO DE VISTAS Y ESTADO DE SESIÓN ---
@@ -157,7 +230,7 @@ async function actualizarMetricasTaller() {
         const resV = await fetch(`${CONFIG.API_BASE_URL}/vehiculos/?skip=0&limit=100`);
         const vehiculos = await resV.json();
         if (resV.ok && Array.isArray(vehiculos)) {
-            document.getElementById('kpi-total-vehiculos').textContent = vehiculos.length;
+            animarValorKPI('kpi-total-vehiculos', vehiculos.length);
         }
 
         const resM = await fetch(`${CONFIG.API_BASE_URL}/mantenimientos/?skip=0&limit=100`);
@@ -167,9 +240,9 @@ async function actualizarMetricasTaller() {
             const enProceso = mantenimientos.filter(m => m.estado === 'en_proceso').length;
             const completados = mantenimientos.filter(m => m.estado === 'completado').length;
 
-            document.getElementById('kpi-pendientes').textContent = pendientes;
-            document.getElementById('kpi-en-proceso').textContent = enProceso;
-            document.getElementById('kpi-completados').textContent = completados;
+            animarValorKPI('kpi-pendientes', pendientes);
+            animarValorKPI('kpi-en-proceso', enProceso);
+            animarValorKPI('kpi-completados', completados);
         }
     } catch (err) {
         // Silencioso si falla la métrica
